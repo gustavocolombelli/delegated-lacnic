@@ -1,27 +1,83 @@
-#include "../headers/indexador.h"
+#include "indexador.h"
+
+tpTuplaPrincipal linhaParaStruct(char* linha){
+
+	tpTuplaPrincipal tuplaPrincipal;
+
+	char *token;
+	token = strtok(linha, "|");//dado irrelevante
+    
+		if(linha[7]=='|'){
+			strcpy(tuplaPrincipal.pais, "00");	
+		}
+       else{
+       		token = strtok(NULL, "|");
+      	    strcpy(tuplaPrincipal.pais, token);	
+       }
+
+       token = strtok(NULL, "|");
+       strcpy(tuplaPrincipal.tipoIp, token);
+       
+
+       token = strtok(NULL, "|");
+       strcpy(tuplaPrincipal.ip, token);
+       
 
 
-void indexPorPais(char * linha, long int posicaoLinha, FILE * arquivoPorPais){
+       token = strtok(NULL, "|");
+       strcpy(tuplaPrincipal.ipQuantity, token);
+       
 
-	if(linha[7]=='|')
-		fprintf(arquivoPorPais, "00|%ld\n", posicaoLinha);
-	else{
-		fprintf(arquivoPorPais, "%c%c|%ld\n",linha[7], linha[8], posicaoLinha);
-	}
+      	
+       	token = strtok(NULL, "|");
+
+       if(strstr(token, "available")){
+       		strcpy(tuplaPrincipal.data, "00000000");
+       		strcpy(tuplaPrincipal.status, "available");
+       
+       }
+       else if(strstr(token, "reserved")){
+       		strcpy(tuplaPrincipal.data, "00000000");
+       		strcpy(tuplaPrincipal.status, "reserved");
+       		
+       }
+       else{
+       		strcpy(tuplaPrincipal.data, token);
+       		token = strtok(NULL, "|");
+       		strcpy(tuplaPrincipal.status, token);
+       		
+       }
+       return tuplaPrincipal;
+}
+
+void printaTuplaPrincipal(tpTuplaPrincipal tuplaPrincipal){
+	printf("[Pais:%s] ", tuplaPrincipal.pais);
+	printf("[Tipo ip:%s] ", tuplaPrincipal.tipoIp);
+	printf("[Ip:%s] ", tuplaPrincipal.ip);
+	printf("[Ip quantity:%s] ", tuplaPrincipal.ipQuantity);
+	printf("[data: %s] ", tuplaPrincipal.data);	
+    printf("[status: %s] ", tuplaPrincipal.status);
+    printf("[Pos: %ld]\n", tuplaPrincipal.posicaoLinha);
+
+}
+
+void indexPorPais(tpTuplaPrincipal tupla, FILE * indexXpais){
+
+
 
 
 }
 
-void indexTiposXdisponibilidade(char * linha, long int posicaoLinha, FILE *arquivoIpv4, FILE *arquivoIpv6, FILE *arquivoAsn){
-	if (strstr(linha, "ipv4"))
+/*void indexTiposXdisponibilidade(char * linha, long int posicaoLinha, FILE *arquivoIpv4, FILE *arquivoIpv6, FILE *arquivoAsn){
+	if (strstr(linha, "ipv4")) //&& available
 	{
 		fprintf(arquivoIpv4, "%ld ", posicaoLinha);
 	}
-	else if (strstr(linha, "ipv6"))
+	else if (strstr(linha, "ipv6")) //&& available
 	{
 		fprintf(arquivoIpv6, "%ld ", posicaoLinha);
 	}
-	else if (strstr(linha, "asn"))
+	else if (strstr(linha, "asn")) //&& available
 	{
 		fprintf(arquivoAsn, "%ld ", posicaoLinha);
 	}
@@ -30,9 +86,13 @@ void indexTiposXdisponibilidade(char * linha, long int posicaoLinha, FILE *arqui
 		printf("Erro ao fazer a indexacao dos ips por disponibilidade, favor verificar o arquivo matriz");
 	}
 
-}
+}*/
 
+
+//função destinada para a criação dos indices, abertura unica do arquivo principal para a criação dos demais.
 void indexador(){
+
+tpTuplaPrincipal tuplaPrincipal;
 
 FILE *arquivoPrincipal, 
 	 *arquivoPorPais, 
@@ -40,8 +100,9 @@ FILE *arquivoPrincipal,
 	 *arquivoIpv6Disponiveis, 
 	 *arquivoAsnDisponiveis;
 
-char linha[60];
+char linha[100];
 long int posicaoLinha;
+
 
 	arquivoPorPais=fopen("../data/indexadores/indexPorPais", "wt");
 	arquivoIpv4Disponiveis=fopen("../data/indexadores/indexIpv4Xdisponibilidade", "wt");
@@ -55,14 +116,19 @@ long int posicaoLinha;
 	else{
 		while(!feof(arquivoPrincipal)){
 			
-			//a linha possui os dados do arquivo, posicaoLinha é a sua posição em bytes a partir do seek_set
+			//enquadramento da linha e obtenção da posição dela.
+
 			posicaoLinha = ftell(arquivoPrincipal);
 			fscanf(arquivoPrincipal, "%s", linha);
+			tuplaPrincipal = linhaParaStruct(linha);
+			tuplaPrincipal.posicaoLinha = posicaoLinha;
+
 
 			//funções para indexadores, sempre serão passada a linha e a posição (long int)
 		    //o objetivo é usar a mesma linha para fazer todos os indexadores primarios
-			indexPorPais(linha, posicaoLinha, arquivoPorPais);
-			indexTiposXdisponibilidade(linha, posicaoLinha, arquivoIpv4Disponiveis, arquivoIpv6Disponiveis, arquivoAsnDisponiveis);
+			/*indexPorPais(linha, posicaoLinha, arquivoPorPais);
+			indexTiposXdisponibilidade(linha, posicaoLinha, arquivoIpv4Disponiveis, arquivoIpv6Disponiveis, arquivoAsnDisponiveis);*/
+			printaTuplaPrincipal(tuplaPrincipal);
 		}
 
 		fclose(arquivoPorPais);
