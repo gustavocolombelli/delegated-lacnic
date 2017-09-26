@@ -7,6 +7,7 @@ int main(int argc, char const *argv[])
 	printf(" indexador\tComandos\n");
 	printf(" imprimir \tComandos\n");
 	printf(" resetar  \t[-tudo][-indices][indice --nome]\t\t\tZerar a base de dados (e arquivos de índices)\n");
+	printf(" backup  \t [-all]\t\t\t\n");
 
 
 
