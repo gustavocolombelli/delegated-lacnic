@@ -1,4 +1,4 @@
-#include "indexador.h"
+#include "indexar.h"
 
 tpTuplaPrincipal linhaParaStruct(char* linha){
 
@@ -47,7 +47,27 @@ tpTuplaPrincipal linhaParaStruct(char* linha){
        		strcpy(tuplaPrincipal.status, token);
        		
        }
-       return tuplaPrincipal;
+       return tuplaPrincipal; 
+}
+
+tpTuplaPrincipal buscaLinha(long int posicao){
+	
+	FILE* arquivoPrincipal;
+	char linha[MAX_STR];
+	if((arquivoPrincipal=fopen("../data/delegated-lacnic-extended-20170903", "r"))==NULL){
+		printf("Erro ao abrir o arquivo");
+
+	}
+	else{
+		 if(fseek(arquivoPrincipal, posicao, SEEK_SET)==0){
+			fscanf(arquivoPrincipal, "%s", linha);
+			return linhaParaStruct(linha);
+		}
+		else{
+			printf("Erro, posicao inválida");
+		}
+	}
+
 }
 
 void printaTuplaPrincipal(tpTuplaPrincipal tuplaPrincipal){
@@ -61,11 +81,49 @@ void printaTuplaPrincipal(tpTuplaPrincipal tuplaPrincipal){
 
 }
 
-void indexPorPais(tpTuplaPrincipal tupla, FILE * indexXpais){
+void indexarPorPais(tpTuplaPrincipal tuplaPrincipal, FILE * indexXpais){
+
+	tpIndexPais tuplaPais;
+	
+	//passando parametros necessarios para a struct do index indexXpais
+	strcpy(tuplaPais.pais, tuplaPrincipal.pais);
+	tuplaPais.posicaoIndexPrincipal = tuplaPrincipal.posicaoLinha;
+	
+	fwrite(&tuplaPais, sizeof(tpIndexPais), 1, indexXpais);  
+
+}
+
+void buscaIndexPorPais(){
+
+	tpIndexPais tuplaPais;
+	tpTuplaPrincipal tuplaPrincipal;
+	
+	char linha[MAX_STR];
+	
+	FILE * indexXpais,
+		 * arquivoPrincipal;
+
+	if((indexXpais=fopen("../data/indexadores/indexPorPais.bin", "rb"))==NULL){
+		printf("Erro: abertura de arquivo indexPorPais.bin");
+	}
+	else if((arquivoPrincipal=fopen("../data/delegated-lacnic-extended-20170903", "r"))==NULL){
+		printf("Erro: abertura do arquivo delegated-lacnic-extended-20170903");
+	}
+	else{
+
+		while(!feof(indexXpais)){
+
+			fscanf(arquivoPrincipal, "%s", linha);
+			tuplaPrincipal = linhaParaStruct(linha);
+			tuplaPrincipal.posicaoLinha = tuplaPais.posicaoIndexPrincipal;
+			
+			printaTuplaPrincipal(tuplaPrincipal);
+			fread(&tuplaPais, 1, sizeof(tpIndexPais), indexXpais);
+			fseek(arquivoPrincipal, tuplaPais.posicaoIndexPrincipal, SEEK_SET);
 
 
-
-
+		}
+	}
 }
 
 /*void indexTiposXdisponibilidade(char * linha, long int posicaoLinha, FILE *arquivoIpv4, FILE *arquivoIpv6, FILE *arquivoAsn){
@@ -95,19 +153,14 @@ void indexador(){
 tpTuplaPrincipal tuplaPrincipal;
 
 FILE *arquivoPrincipal, 
-	 *arquivoPorPais, 
-	 *arquivoIpv4Disponiveis, 
-	 *arquivoIpv6Disponiveis, 
-	 *arquivoAsnDisponiveis;
+	 *arquivoPorPais;
 
-char linha[100];
+
+char linha[MAX_STR];
 long int posicaoLinha;
 
+	arquivoPorPais=fopen("../data/indexadores/indexPorPais.bin", "wb");
 
-	arquivoPorPais=fopen("../data/indexadores/indexPorPais", "wt");
-	arquivoIpv4Disponiveis=fopen("../data/indexadores/indexIpv4Xdisponibilidade", "wt");
-	arquivoIpv6Disponiveis=fopen("../data/indexadores/indexIpv6Xdisponibilidade", "wt");
-	arquivoAsnDisponiveis=fopen("../data/indexadores/indexAsnXdisponibilidade", "wt");
 
 	if((arquivoPrincipal=fopen("../data/delegated-lacnic-extended-20170903", "r"))==NULL){
 		printf("Erro ao abrir o arquivo");
@@ -115,7 +168,7 @@ long int posicaoLinha;
 	}
 	else{
 		while(!feof(arquivoPrincipal)){
-			
+	
 			//enquadramento da linha e obtenção da posição dela.
 
 			posicaoLinha = ftell(arquivoPrincipal);
@@ -123,19 +176,17 @@ long int posicaoLinha;
 			tuplaPrincipal = linhaParaStruct(linha);
 			tuplaPrincipal.posicaoLinha = posicaoLinha;
 
-
 			//funções para indexadores, sempre serão passada a linha e a posição (long int)
 		    //o objetivo é usar a mesma linha para fazer todos os indexadores primarios
 			/*indexPorPais(linha, posicaoLinha, arquivoPorPais);
 			indexTiposXdisponibilidade(linha, posicaoLinha, arquivoIpv4Disponiveis, arquivoIpv6Disponiveis, arquivoAsnDisponiveis);*/
-			printaTuplaPrincipal(tuplaPrincipal);
+			//printaTuplaPrincipal(tuplaPrincipal);
+			indexarPorPais(tuplaPrincipal, arquivoPorPais);
+		
 		}
 
 		fclose(arquivoPorPais);
-
-		fclose(arquivoIpv4Disponiveis);
-		fclose(arquivoIpv6Disponiveis);
-    	fclose(arquivoAsnDisponiveis);
+		fclose(arquivoPrincipal);
 	}
 
 
@@ -147,6 +198,7 @@ int main(int argv, char *argc[]){
 
 
 	indexador();
-	
+	buscaIndexPorPais();
+	//printaTuplaPrincipal(buscaLinha(-412));
 	return 0;
 }

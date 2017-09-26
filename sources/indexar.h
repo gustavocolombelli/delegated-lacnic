@@ -1,9 +1,11 @@
-#ifndef INDEXADOR_FILE
-#define INDEXADOR_FILE
+#ifndef INDEXAR_FILE
+#define INDEXAR_FILE
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
+#define MAX_STR 100
 
 //para o carregamento do arquivo principal.
 typedef struct{
@@ -19,11 +21,25 @@ typedef struct{
 
 }tpTuplaPrincipal;
 
+typedef struct indexPais
+{
+	char pais[3];
+	long int posicaoIndexPrincipal;
+}tpIndexPais;
+
+
+
 tpTuplaPrincipal linhaParaStruct(char * linha);
 void printaTuplaPrincipal(tpTuplaPrincipal tuplaPrincipal);
+tpTuplaPrincipal buscaLinha(long int posicao);
 
-void indexPorPais(tpTuplaPrincipal tupla, FILE * indexXpais);
-void indexTiposXdisponibilidade(char * linha, long int posicaoLinha, FILE *arquivoIpv4, FILE *arquivoIpv6, FILE *arquivoAsn);
+// --- FUNÇÕES PARA CRIAÇÃO DE INDEX ---
+void indexarPorPais(tpTuplaPrincipal tuplaPrincipal, FILE * indexXpais);
+
+
+
+void buscaIndexPorPais();
+
 
 //reune todos os index para fazer os indexadores
 void indexador();
