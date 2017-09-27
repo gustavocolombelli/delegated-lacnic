@@ -55,8 +55,7 @@ tpTuplaPrincipal buscaLinha(long int posicao){
 	FILE* arquivoPrincipal;
 	char linha[MAX_STR];
 	if((arquivoPrincipal=fopen("../data/delegated-lacnic-extended-20170903", "r"))==NULL){
-		printf("Erro ao abrir o arquivo");
-
+		printf("Erro ao abrir o arquivo\n");
 	}
 	else{
 		 if(fseek(arquivoPrincipal, posicao, SEEK_SET)==0){
@@ -64,7 +63,7 @@ tpTuplaPrincipal buscaLinha(long int posicao){
 			return linhaParaStruct(linha);
 		}
 		else{
-			printf("Erro, posicao inválida");
+			printf("[ERRO] posicao inválida, buscaL");
 		}
 	}
 
@@ -157,23 +156,19 @@ void buscaIndexPorPais(){
 }
 
 int contarQuantidadeTipoIp(char * tipoIp, char *nomeArquivo){
+	
 	FILE * indexTipoIp;
-	tpIndexTipoIp tuplaIndexTipoIp;
-	int quantidadeIps;
+	long int tamanho;
 
 	if((indexTipoIp=fopen(nomeArquivo, "rb"))==NULL){
 		printf("Erro: abertura de arquivo indexPorPais.bin");
+		return -1;
 	}
 	else{
-
-		for(quantidadeIps=0;!feof(indexTipoIp);quantidadeIps++){
-
-			fread(&tuplaIndexTipoIp, 1, sizeof(tpIndexTipoIp), indexTipoIp);
-			printf("%s\n%ld\n\n", tuplaIndexTipoIp.tipoIp, tuplaIndexTipoIp.posicao);
-
-		}
-		printf("%d", quantidadeIps);
-		return quantidadeIps;
+		fseek(indexTipoIp, 0, SEEK_END);
+		tamanho = ftell(indexTipoIp);
+		fclose(indexTipoIp);
+		return tamanho/(sizeof(tpIndexTipoIp)); //tpIndexTipoIp é a estrutura de inxex por tipo de ip
 	}
 }
 
@@ -225,37 +220,106 @@ long int posicaoLinha;
 
 }
 
+char * traduzir(char *argv){
+	if(strcmp(argv, "alocados")==0){
+		return "allocated";
+	}
+
+	else if(strcmp(argv, "reservados")==0){
+		return "reserved";
+	}
+
+	else if(strcmp(argv, "disponiveis")==0){
+		return "available";
+	}
+}
+
+
+int ipPorStatus(char * status, char * tipoIp, char *nomeArquivoIndexPorIp){
+	char linha[200];
+	tpIndexTipoIp tuplaIndexTipoIp;
+	tpTuplaPrincipal tuplaPrincipal;
+	FILE *arquivoIndexIp;
+	FILE *arquivoPrincipal;
+	int quantidade=0;
+
+	if((arquivoIndexIp=fopen(nomeArquivoIndexPorIp, "r"))==NULL){
+		printf("[Erro] Abertura do arquivo %s, funcao ipPorStatus", nomeArquivoIndexPorIp);
+
+	}
+	else if((arquivoPrincipal=fopen("../data/delegated-lacnic-extended-20170903", "r"))==NULL){
+		printf("Erro ao abrir o arquivo principal");
+
+	}
+
+	else{
+		while(!feof(arquivoPrincipal)){
+
+			fscanf(arquivoPrincipal, "%s", linha);
+			
+			tuplaPrincipal = linhaParaStruct(linha);
+
+			if(strcmp(tuplaPrincipal.tipoIp, tipoIp)==0 && (strcmp(tuplaPrincipal.status, traduzir(status))==0)){
+				printf("[%s] [%s] [%s]\n", tuplaPrincipal.tipoIp, tuplaPrincipal.ip , tuplaPrincipal.status);
+				quantidade++;
+			}
+		}
+
+		fclose(arquivoIndexIp);
+		fclose(arquivoPrincipal);
+	}
+
+
+
+	return quantidade;
+}
+
+void contar(char *argv[]){
+	char nomeArquivoIndexPorIp[60];
+
+		if (strcmp(argv[2],"ipv4")==0){
+			strcpy(nomeArquivoIndexPorIp, "../data/indexadores/indexIpv4.bin");
+			
+		}
+		else if(strcmp(argv[2],"ipv6")==0){
+			strcpy(nomeArquivoIndexPorIp, "../data/indexadores/indexIpv6.bin");
+		}
+		else if(strcmp(argv[2],"asn")==0){
+			strcpy(nomeArquivoIndexPorIp, "../data/indexadores/indexAsn.bin");
+		}
+		else{
+			printf("[ERRO] Tipo de ip invalido\n");
+			return;
+		}
+
+		if(strcmp(argv[1], "quantidade")==0 && argv[3]==NULL){
+			printf("\n---\nQuantidade de %s correspondentes: %d\n", argv[2], contarQuantidadeTipoIp(argv[2], nomeArquivoIndexPorIp));
+		}
+		else if(strcmp(argv[1], "quantidade")==0 && ((strcmp(argv[3], "alocados")==0)||(strcmp(argv[3], "disponiveis")==0)||(strcmp(argv[3], "reservados")==0))){
+			printf("\n--\t--\t--\t--\t--\n[TOTAL DE %d %s %s]\n", ipPorStatus(argv[3], argv[2], nomeArquivoIndexPorIp),argv[2], argv[3]);
+			}
+
+		else{
+			printf("\n[ERRO] Argumento/s invalido/s\n");
+		}
+
+}
+
+
 
 
 int main(int argc, char *argv[]){
 
 	if(strcmp(argv[1], "-indexar") == 0){
-		printf("ok, indexando");
+		printf("\n---\n[INDEXADO COM SUCESSO]");
 		indexador();
-		printf("\nTodos os indices foram criados com sucesso!\n");
+		printf("\nTodos os indices foram criados com sucesso!\n---\n");
 	}
 	else if (strcmp(argv[1], "quantidade")==0)
 	{
-		char nomeArquivo[20];
-		if (strcmp(argv[2],"ipv4")==0)
-		{
-			strcpy(nomeArquivo, "../data/indexadores/indexIpv4.bin");
-			contarQuantidadeTipoIp(argv[2], nomeArquivo);
-		}
-		else if(strcmp(argv[2],"ipv6")==0){
-			strcpy(nomeArquivo, "../data/indexadores/indexIpv6.bin");
-			contarQuantidadeTipoIp(argv[2], nomeArquivo);
-		}
-		else if(strcmp(argv[2],"asn")==0){
-			strcpy(nomeArquivo, "../data/indexadores/indexAsn.bin");
-			contarQuantidadeTipoIp(argv[2], nomeArquivo);
-		}
-		else{
-			printf("[ERRO] Tipo de ip invalido");
-			return 1;
-		}
-
+		contar(argv);
 	}
+
 	else{
 		printf("[ERRO] Comando Inválido\n\n");
 	}
@@ -264,3 +328,43 @@ int main(int argc, char *argv[]){
 
 	return 0;
 }
+
+
+
+/*
+FEITOS
+a) Importar o arquivo-texto, e gerar arquivo(s) estruturado(s) indexado(s)
+g) Contar a quantidade de IPv4 de um país;
+h) Contar a quantidade de IPv6 de um país; (fórmula)
+i) Contar a quantidade de ASN de um país;
+m) Imprimir a quantidade de endereços IPv4 alocados;
+n) Imprimir a quantidade de endereços IPv4 disponíveis;
+o) Imprimir a quantidade de endereços IPv4 reservados;
+p) Imprimir a quantidade de endereços IPv6 alocados; (fórmula)
+q) Imprimir a quantidade de endereços IPv6 disponíveis; (fórmula)
+r) Imprimir a quantidade de endereços IPv6 reservados; (fórmula)
+y) Imprimir os ASN disponíveis;
+w) Imprimir os blocos IPv4 disponíveis;
+x) Imprimir os blocos IPv6 disponíveis;
+
+FAZENDO
+j) Imprimir o ranking de ASN por pais em ordem decrescente;
+k) Imprimir o ranking da quantidade de IPv4 por pais em ordem decrescente;
+l) Imprimir o ranking da quantidade de IPv6 por pais em ordem decrescente; (fórmula)
+
+A FAZER
+
+s) Mostrar a data de alocação de um ASN;
+t) Mostrar a data de alocação de um bloco IPv4;
+u) Mostrar a data de alocação de um bloco IPv6;
+v) Mostrar a quantidade de recursos (ASN/IPv4/IPv6) alocados em um ano e/ou mês específico;
+
+z) Zerar a base de dados (e arquivos de índices);
+
+
+
+
+
+
+
+*/

@@ -48,6 +48,11 @@ void indexarPorTipo(tpTuplaPrincipal tuplaPrincipal, FILE * arquivoIndexIpv4,
 // FUNÇÕES DE PESQUISA
 void buscaIndexPorPais();
 int contarQuantidadeTipoIp(char * tipoIp, char *nomeArquivo); //(ipv4, ipv6, asn)
+void contar(char *argv[]);
+int ipPorStatus(char * acao, char * tipoIp, char * nomeArquivoIndexPorIp);
+
+// FUNÇÕES AUXILIARES
+char * traduzir(char *argv);
 
 //reune todos os index para fazer os indexadores
 void indexador();
