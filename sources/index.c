@@ -220,19 +220,6 @@ long int posicaoLinha;
 
 }
 
-char * traduzir(char *argv){
-	if(strcmp(argv, "alocados")==0){
-		return "allocated";
-	}
-
-	else if(strcmp(argv, "reservados")==0){
-		return "reserved";
-	}
-
-	else if(strcmp(argv, "disponiveis")==0){
-		return "available";
-	}
-}
 
 
 int ipPorStatus(char * status, char * tipoIp, char *nomeArquivoIndexPorIp){
@@ -358,7 +345,6 @@ s) Mostrar a data de alocação de um ASN;
 t) Mostrar a data de alocação de um bloco IPv4;
 u) Mostrar a data de alocação de um bloco IPv6;
 v) Mostrar a quantidade de recursos (ASN/IPv4/IPv6) alocados em um ano e/ou mês específico;
-
 z) Zerar a base de dados (e arquivos de índices);
 
 

@@ -5,6 +5,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "ferramentas.h"
+
 #define MAX_STR 100
 
 //para o carregamento do arquivo principal.
