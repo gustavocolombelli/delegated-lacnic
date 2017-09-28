@@ -8,7 +8,7 @@
 #include "ferramentas.h"
 
 #define MAX_STR 100
-
+#define MAX_VET 50000
 //para o carregamento do arquivo principal.
 typedef struct{
 
@@ -41,6 +41,7 @@ void printaTuplaPrincipal(tpTuplaPrincipal tuplaPrincipal);
 tpTuplaPrincipal buscaLinha(long int posicao);
 
 // --- FUNÇÕES PARA CRIAÇÃO DE INDEX ---
+void indexarPaisesOrdenados();
 void indexarPorPais(tpTuplaPrincipal tuplaPrincipal, FILE * indexXpais);
 
 void indexarPorTipo(tpTuplaPrincipal tuplaPrincipal, FILE * arquivoIndexIpv4, 
@@ -50,7 +51,7 @@ void indexarPorTipo(tpTuplaPrincipal tuplaPrincipal, FILE * arquivoIndexIpv4,
 // FUNÇÕES DE PESQUISA
 char * buscarPorDataAlocacao(char *tipoIp, char *ip);
 void buscaIndexPorPais();
-int contarQuantidadeTipoIp(char * tipoIp, char *nomeArquivo); //(ipv4, ipv6, asn)
+int contarQuantidadeTipoIp(char *nomeArquivo); //(ipv4, ipv6, asn)
 int ipPorStatus(char * acao, char * tipoIp, char * nomeArquivoIndexPorIp);
 
 // FUNÇÕES AUXILIARES

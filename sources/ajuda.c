@@ -7,6 +7,7 @@ int main(int argc, char const *argv[])
 	printf("[COMANDO]\n [ARGS...]");	
 	printf("index\n");
 	printf(" [-indexar]\n");
+	printf(" [-ordenarPaises");
 	printf(" [backup]\n");
 	printf(" [quantidade, tipoIp]\n");
 	printf(" [quantidade, tipoIp, status] 	status = disponiveis, alocados, reservados\n");

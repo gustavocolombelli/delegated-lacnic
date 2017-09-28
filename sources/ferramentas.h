@@ -39,6 +39,12 @@ char * caminhoDiretorioArquivo(char *argv){
 		else if(strcmp(argv,"asn")==0){
 			return "../data/indexadores/indexAsn.bin";
 		}
+		else if(strcmp(argv,"indexPorPais")==0){
+			return "../data/indexadores/indexPorPais.bin";
+		}
+		else if(strcmp(argv,"paisesOrdenados")==0){
+			return "../data/indexadores/paisesOrdenados.bin";
+		}
 		else if(strcmp(argv,"principal")==0){
 			return "../data/delegated-lacnic-extended-20170903";
 		}
@@ -46,5 +52,16 @@ char * caminhoDiretorioArquivo(char *argv){
 			return NULL;
 		}
 	}
+
+void printaData(char *data8dig){
+	printf("Data da alocaçãoo: %c%c/%c%c/%c%c%c%c", data8dig[6],data8dig[7],
+								 data8dig[4], data8dig[5],
+								 data8dig[0],data8dig[1], data8dig[2], data8dig[3]);
+
+}
+
+long int tamanhoArquivo(void *tpStruct){
+	return 1;
+}
 
 #endif
