@@ -19,6 +19,32 @@ char * traduzir(char *argv){
 	}
 }
 
+
+void erro(int numErro, char *msgErro){
+	printf("[ERRO %d] %s\n", numErro, msgErro);
+	switch(numErro){
+		case 1: printf("asd");
+	}
 }
+
+char * caminhoDiretorioArquivo(char *argv){
+		char nomeArquivoIndexPorIp[60];
+		
+		if (strcmp(argv,"ipv4")==0){
+			return "../data/indexadores/indexIpv4.bin";
+		}
+		else if(strcmp(argv,"ipv6")==0){
+			return nomeArquivoIndexPorIp, "../data/indexadores/indexIpv6.bin";
+		}
+		else if(strcmp(argv,"asn")==0){
+			return "../data/indexadores/indexAsn.bin";
+		}
+		else if(strcmp(argv,"principal")==0){
+			return "../data/delegated-lacnic-extended-20170903";
+		}
+		else{
+			return NULL;
+		}
+	}
 
 #endif

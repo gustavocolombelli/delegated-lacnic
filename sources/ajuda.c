@@ -10,7 +10,7 @@ int main(int argc, char const *argv[])
 	printf(" [backup]\n");
 	printf(" [quantidade, tipoIp]\n");
 	printf(" [quantidade, tipoIp, status] 	status = disponiveis, alocados, reservados\n");
-
+	printf(" [pordata, tipoIp, ip]\n");
 	printf(" [ranking, tipoIp, ordem]       ordem = crescente, decrescente\n");
 	printf("\n\n");
 

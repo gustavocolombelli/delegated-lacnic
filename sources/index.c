@@ -220,8 +220,6 @@ long int posicaoLinha;
 
 }
 
-
-
 int ipPorStatus(char * status, char * tipoIp, char *nomeArquivoIndexPorIp){
 	char linha[200];
 	tpIndexTipoIp tuplaIndexTipoIp;
@@ -274,6 +272,7 @@ void contar(char *argv[]){
 		else if(strcmp(argv[2],"asn")==0){
 			strcpy(nomeArquivoIndexPorIp, "../data/indexadores/indexAsn.bin");
 		}
+
 		else{
 			printf("[ERRO] Tipo de ip invalido\n");
 			return;
@@ -282,18 +281,39 @@ void contar(char *argv[]){
 		if(strcmp(argv[1], "quantidade")==0 && argv[3]==NULL){
 			printf("\n---\nQuantidade de %s correspondentes: %d\n", argv[2], contarQuantidadeTipoIp(argv[2], nomeArquivoIndexPorIp));
 		}
+
 		else if(strcmp(argv[1], "quantidade")==0 && ((strcmp(argv[3], "alocados")==0)||(strcmp(argv[3], "disponiveis")==0)||(strcmp(argv[3], "reservados")==0))){
 			printf("\n--\t--\t--\t--\t--\n[TOTAL DE %d %s %s]\n", ipPorStatus(argv[3], argv[2], nomeArquivoIndexPorIp),argv[2], argv[3]);
-			}
-
+		}
+	
 		else{
 			printf("\n[ERRO] Argumento/s invalido/s\n");
 		}
 
 }
 
+char * buscarPorDataAlocacao(char *tipoIp, char *ip){
+
+		FILE * arquivoIndexIp, *arquivoPrincipal;
+
+		
+		if((arquivoIndexIp=fopen(caminhoDiretorioArquivo(tipoIp), "rb"))==NULL){
+			erro(407, "Abertura de arquivo");
+		}
+		else if((arquivoPrincipal=fopen(caminhoDiretorioArquivo("principal"), "r"))==NULL){
+			erro(407, "Arquivo principal");
+		}
+		
+		else{
+
+			printf("foiqfoi");
+		}
 
 
+
+		return "asd";
+	
+}
 
 int main(int argc, char *argv[]){
 
@@ -305,6 +325,10 @@ int main(int argc, char *argv[]){
 	else if (strcmp(argv[1], "quantidade")==0)
 	{
 		contar(argv);
+	}
+
+	else if(strcmp(argv[1], "pordata")==0){
+		buscarPorDataAlocacao(argv[2], argv[3]);
 	}
 
 	else{
@@ -335,19 +359,16 @@ w) Imprimir os blocos IPv4 disponíveis;
 x) Imprimir os blocos IPv6 disponíveis;
 
 FAZENDO
-j) Imprimir o ranking de ASN por pais em ordem decrescente;
-k) Imprimir o ranking da quantidade de IPv4 por pais em ordem decrescente;
-l) Imprimir o ranking da quantidade de IPv6 por pais em ordem decrescente; (fórmula)
-
-A FAZER
-
 s) Mostrar a data de alocação de um ASN;
 t) Mostrar a data de alocação de um bloco IPv4;
 u) Mostrar a data de alocação de um bloco IPv6;
+
+A FAZER
 v) Mostrar a quantidade de recursos (ASN/IPv4/IPv6) alocados em um ano e/ou mês específico;
 z) Zerar a base de dados (e arquivos de índices);
-
-
+j) Imprimir o ranking de ASN por pais em ordem decrescente;
+k) Imprimir o ranking da quantidade de IPv4 por pais em ordem decrescente;
+l) Imprimir o ranking da quantidade de IPv6 por pais em ordem decrescente; (fórmula)
 
 
 
