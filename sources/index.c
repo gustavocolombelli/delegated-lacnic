@@ -326,6 +326,8 @@ char * buscarPorDataAlocacao(char *tipoIp, char *ip){
 
 void indexarPaisesOrdenados(){
 	FILE *indexPorPais, *indexOrdenar;
+	tpIndexPais tuplaPais[MAX_VET];
+
 	if((indexOrdenar=fopen(caminhoDiretorioArquivo("paisesOrdenados"), "wb"))==NULL){
 			erro(407, "Criação do arquivo paisesOrdenados");
 	}
@@ -333,18 +335,48 @@ void indexarPaisesOrdenados(){
 			erro(407, "Arquivo principal");
 	}
 	else{
+		int i,j, tamanhoVetor, gap;
+		char temp[3];
 
-		int i;
-		tpIndexPais indexPaisesOrdenando[MAX_VET];
+		for(i=0;!feof(indexPorPais);i++)
+			fread(&tuplaPais[i], 1, sizeof(tpIndexPais), indexPorPais);
+		
+		tamanhoVetor = --i;
+	
+		for(gap=1;gap<tamanhoVetor;gap=3*gap+1)
+		;
 
-		for(i=0;!feof(indexPorPais);i++){
-			if(feof(indexPorPais))
-				break;
-			fread(&indexPaisesOrdenando[i], 1, sizeof(tpIndexPais), indexPorPais);
-			printf("Pais: %s\n", indexPaisesOrdenando[i].pais); //CONTINUAR FUNCAO GENERICA PARA CALCULAR TAMANHO DO ARQUIVO
+		while(gap>1){
+			gap/=3;
+			for (i = gap; i < tamanhoVetor; ++i)
+			{
+				strcpy(temp, tuplaPais[i].pais);
+				j=i-gap;
+				while(j>=0 && strcmp(temp, tuplaPais[j].pais)<0){
+					strcpy(tuplaPais[j+gap].pais, tuplaPais[j].pais);
+					j-=gap;
+					printf("%s\n", tuplaPais[i].pais);
+				}
+				strcpy(tuplaPais[j+gap].pais, temp);
+			}
 		}
 
+		FILE *teste;
+		teste=fopen("teste", "w");
+
+		for(i=0;i<tamanhoVetor;i++){
+			fprintf(teste, "Pais: %s\n", tuplaPais[i].pais);
+		}
+
+		fclose(teste);
+		fclose(indexPorPais);
+		fclose(indexOrdenar);
+
+
+
 	}
+
+
 		
 
 }
