@@ -12,7 +12,8 @@ int main(int argc, char const *argv[])
 	printf(" [quantidade, tipoIp]\n");
 	printf(" [quantidade, tipoIp, status] 	status = disponiveis, alocados, reservados\n");
 	printf(" [pordata, tipoIp, ip]\n");
-	printf(" [ranking, tipoIp, ordem]       ordem = crescente, decrescente\n");
+	printf(" [-ranking, tipoIp]\n");
+	printf(" [-recursos, tipoIp, tipoData, data]\tQuantidade de recursos alocados em determinado tipo de data (mes/ano) e a data\n");
 	printf("\n\n");
 
 	return 0;

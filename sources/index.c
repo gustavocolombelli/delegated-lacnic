@@ -171,6 +171,48 @@ int contarQuantidadeTipoIp(char *nomeArquivo){
 	}
 }
 
+void indexarPorData(tpTuplaPrincipal tuplaPrincipal, FILE *indexPorData){
+
+	tpIndexPorData tuplaIndexPorData;
+
+	strcpy(tuplaIndexPorData.data, tuplaPrincipal.data);
+	tuplaIndexPorData.posicao = tuplaPrincipal.posicaoLinha;
+	
+	fwrite(&tuplaIndexPorData, sizeof(tpIndexPorData), 1, indexPorData);  
+
+}
+
+int quantidadeRecursos(char *tipoIp, char *tipoData, char *data){
+	int quantidade=0;
+	FILE *arquivoIndexPorData, *arquivoPrincipal;
+	tpIndexPorData tuplaPorData;
+	tpTuplaPrincipal tuplaPrincipal;
+	char linha[MAX_STR];
+
+	if((arquivoIndexPorData=fopen("../data/indexadores/indexPorData.bin", "rb"))==NULL){
+		printf("Erro: abertura de arquivo indexPordata.bin");
+	}
+	else if((arquivoPrincipal=fopen(caminhoDiretorioArquivo("principal"), "r"))==NULL){
+		printf("Erro ao abrir o arquivo principal");
+	}
+	else{
+		while(!feof(arquivoIndexPorData)){
+			fseek(arquivoPrincipal, tuplaPorData.posicao, SEEK_SET);
+			fread(&tuplaPorData, 1, sizeof(tpIndexPorData), arquivoIndexPorData);
+			//printf("%s %ld\n", tuplaPorData.data, tuplaPorData.posicao);
+			if(strstr(tuplaPorData.data, data)!=NULL){
+				fscanf(arquivoPrincipal, "%s", linha);
+				tuplaPrincipal=linhaParaStruct(linha);
+				if(strcmp(tuplaPrincipal.status, "allocated")==0 && strcmp(tuplaPrincipal.tipoIp, tipoIp)==0){
+					printaData(tuplaPrincipal.data);
+					printf("\t\t[%s]\t\t[%s]\n",tuplaPrincipal.tipoIp, tuplaPrincipal.status);
+				}
+			}
+		}
+	}
+	return 50;
+}
+
 //função destinada para a criação dos indices, abertura unica do arquivo principal para a criação dos demais.
 void indexador(){
 
@@ -180,7 +222,8 @@ FILE *arquivoPrincipal,
 	 *arquivoIndexPais,
 	 *arquivoIndexIpv4,
 	 *arquivoIndexIpv6,
-	 *arquivoIndexAsn;
+	 *arquivoIndexAsn,
+	 *arquivoIndexPorData;
 
 char linha[MAX_STR];
 long int posicaoLinha;
@@ -189,6 +232,7 @@ long int posicaoLinha;
 	arquivoIndexIpv4=fopen("../data/indexadores/indexIpv4.bin", "wb");
 	arquivoIndexIpv6=fopen("../data/indexadores/indexIpv6.bin", "wb");
 	arquivoIndexAsn=fopen("../data/indexadores/indexAsn.bin", "wb");
+	arquivoIndexPorData=fopen("../data/indexadores/indexPorData.bin", "wb");
 
 	if((arquivoPrincipal=fopen("../data/delegated-lacnic-extended-20170903", "r"))==NULL){
 		printf("Erro ao abrir o arquivo");
@@ -206,6 +250,7 @@ long int posicaoLinha;
 		  	//---INDEXADORES---
 			indexarPorPais(tuplaPrincipal, arquivoIndexPais);
 			indexarPorTipo(tuplaPrincipal, arquivoIndexIpv4, arquivoIndexIpv6, arquivoIndexAsn);
+			indexarPorData(tuplaPrincipal, arquivoIndexPorData);
 		}
 
 		fclose(arquivoIndexPais);
@@ -213,17 +258,19 @@ long int posicaoLinha;
 		fclose(arquivoIndexIpv4);
 		fclose(arquivoIndexIpv6);
 		fclose(arquivoIndexAsn);
+		fclose(arquivoIndexPorData);
 	}
 
 }
 
-int ipPorStatus(char * status, char * tipoIp, char *nomeArquivoIndexPorIp){
+long int ipPorStatus(char * status, char * tipoIp, char *nomeArquivoIndexPorIp){
 	char linha[200];
 	tpIndexTipoIp tuplaIndexTipoIp;
 	tpTuplaPrincipal tuplaPrincipal;
 	FILE *arquivoIndexIp;
 	FILE *arquivoPrincipal;
 	int quantidade=0;
+	long int quantidadeTotal=0;
 
 	if((arquivoIndexIp=fopen(nomeArquivoIndexPorIp, "r"))==NULL){
 		printf("[Erro] Abertura do arquivo %s, funcao ipPorStatus", nomeArquivoIndexPorIp);
@@ -242,15 +289,24 @@ int ipPorStatus(char * status, char * tipoIp, char *nomeArquivoIndexPorIp){
 			tuplaPrincipal = linhaParaStruct(linha);
 
 			if(strcmp(tuplaPrincipal.tipoIp, tipoIp)==0 && (strcmp(tuplaPrincipal.status, traduzir(status))==0)){
-				printf("[%s] [%s] [%s]\n", tuplaPrincipal.tipoIp, tuplaPrincipal.ip , tuplaPrincipal.status);
+				printf("[%s]\t[%s]\t[%s]  [%s]\n", tuplaPrincipal.tipoIp, tuplaPrincipal.ip , tuplaPrincipal.status, tuplaPrincipal.ipQuantity);
 				quantidade++;
+				if (strcmp(tipoIp, "ipv6")==0)
+				{
+					quantidadeTotal += quantidadeIpv6(tuplaPrincipal.ipQuantity);
+				}
+				else{
+					quantidadeTotal += atoi(tuplaPrincipal.ipQuantity);	
+				}
 			}
 		}
 
 		fclose(arquivoIndexIp);
 		fclose(arquivoPrincipal);
 	}
-	return quantidade;
+	printf("[TIPO]\t[ENDEREÇOS]\t[STATUS]     [QUANTIDADE]\n");
+	printf("  ''   \t   %d     \t   ''        %ld",quantidade, quantidadeTotal);
+	return quantidadeTotal;
 }
 
 void contar(char *argv[]){
@@ -277,7 +333,7 @@ void contar(char *argv[]){
 		}
 
 		else if(strcmp(argv[1], "quantidade")==0 && ((strcmp(argv[3], "alocados")==0)||(strcmp(argv[3], "disponiveis")==0)||(strcmp(argv[3], "reservados")==0))){
-			printf("\n--\t--\t--\t--\t--\n[TOTAL DE %d %s %s]\n", ipPorStatus(argv[3], argv[2], nomeArquivoIndexPorIp),argv[2], argv[3]);
+			printf("\n--\t--\t--\t--\t--\n[TOTAL DE %ld endereços %s %s]\n", ipPorStatus(argv[3], argv[2], nomeArquivoIndexPorIp),argv[2], argv[3]);
 		}
 	
 		else{
@@ -355,37 +411,97 @@ void indexarPaisesOrdenados(){
 				while(j>=0 && strcmp(temp, tuplaPais[j].pais)<0){
 					strcpy(tuplaPais[j+gap].pais, tuplaPais[j].pais);
 					j-=gap;
-					printf("%s\n", tuplaPais[i].pais);
 				}
 				strcpy(tuplaPais[j+gap].pais, temp);
 			}
 		}
 
-		FILE *teste;
-		teste=fopen("teste", "w");
-
 		for(i=0;i<tamanhoVetor;i++){
-			fprintf(teste, "Pais: %s\n", tuplaPais[i].pais);
+			fwrite(&tuplaPais[i], sizeof(tpIndexPais), 1, indexOrdenar);
 		}
 
-		fclose(teste);
 		fclose(indexPorPais);
 		fclose(indexOrdenar);
 
+	}	
+}
 
+void rankingPorIp(char *tipoIp){
+
+	FILE *arquivoPrincipal, *indexOrdenados;
+	tpIndexPais tuplaPaisesOrdenados;
+	tpRankingPais rankingPais[50], auxVet[50], aux;
+	tpTuplaPrincipal tuplaPrincipal;
+	int i,j, tamanhoVetor;
+	char linha[150];
+
+	if((indexOrdenados=fopen(caminhoDiretorioArquivo("paisesOrdenados"), "rb"))==NULL){
+		erro(407, "Abertura do arquivo paisesOrdenados");
+	}
+	else if((arquivoPrincipal=fopen(caminhoDiretorioArquivo("principal"), "r"))==NULL){
+		erro(407, "Arquivo principal");
+	}
+	else{
+		for(i=0;!feof(indexOrdenados);){
+			fread(&tuplaPaisesOrdenados, 1, sizeof(tpIndexPais), indexOrdenados);	
+
+			//Um pais de cada, em ordem alfabetica
+			if(strcmp(rankingPais[i].pais, tuplaPaisesOrdenados.pais)!=0){
+				strcpy(rankingPais[++i].pais, tuplaPaisesOrdenados.pais);
+				rankingPais[i].quantidade = 0;
+			}
+		}
+		tamanhoVetor = i;
+		
+		while(!feof(arquivoPrincipal))
+		{
+			
+			fscanf(arquivoPrincipal, "%s", linha);
+			tuplaPrincipal = linhaParaStruct(linha);
+			
+			for(i=1;i<=tamanhoVetor;i++){
+				if((strcmp(rankingPais[i].pais, tuplaPrincipal.pais)==0) && (strcmp(tuplaPrincipal.tipoIp, tipoIp)==0)){
+					if(strcmp(tipoIp, "ipv6")==0)
+						rankingPais[i].quantidade+=quantidadeIpv6(tuplaPrincipal.ipQuantity);
+					else{
+					rankingPais[i].quantidade += atoi(tuplaPrincipal.ipQuantity);
+					}
+				}
+
+			}
+
+		}
+
+		//Enquandrando vetor e variaveis para o algoritimo
+		for(i=0;i<tamanhoVetor;i++)
+			auxVet[i]=rankingPais[i+1];
+		tamanhoVetor--;
+		//Algoritimo de ordenacao (insertion)
+		for (j = 1; j <= tamanhoVetor; ++j) {
+      	aux = auxVet[j];
+      		for (i = j-1; i >= 0 && auxVet[i].quantidade > aux.quantidade; --i) 
+        	 	auxVet[i+1]= auxVet[i];
+      	    auxVet[i+1] = aux;
+   		}
+
+		printf("[Ranking]     [Pais]\t\t[Quantidade]\n");
+		for(i=tamanhoVetor, j=1;i>=0;i--,j++)
+			printf("   %d°\t\t%s    \t\t%ld\n", j, auxVet[i].pais, auxVet[i].quantidade);
 
 	}
-
-
-		
-
 }
 
 int main(int argc, char *argv[]){
 
-	if(strcmp(argv[1], "-indexar") == 0){
-		printf("\n---\n[INDEXADO COM SUCESSO]");
+	if(argv[1]==NULL){
+		erro(1, "É esperado um comando, ./ajuda para mais informações");
+		return 0;
+	}
+
+	else if(strcmp(argv[1], "-indexar") == 0){
+		printf("\n---\n[INDEXANDO...]");
 		indexador();
+		indexarPaisesOrdenados();
 		printf("\nTodos os indices foram criados com sucesso!\n---\n");
 	}
 	else if (strcmp(argv[1], "quantidade")==0)
@@ -400,8 +516,15 @@ int main(int argc, char *argv[]){
 		indexarPaisesOrdenados();
 	}
 
+	else if(strcmp(argv[1], "-ranking")==0){
+		rankingPorIp(argv[2]);
+	}
+	else if(strcmp(argv[1], "-recursos")==0){
+		quantidadeRecursos(argv[2], argv[3], argv[4]);
+	}
+
 	else{
-		printf("[ERRO] Comando Inválido\n\n");
+		printf("[ERRO] Comando Inválido, ./ajuda para mais informações\n");
 	}
 
 
@@ -429,11 +552,12 @@ x) Imprimir os blocos IPv6 disponíveis;
 s) Mostrar a data de alocação de um ASN;
 t) Mostrar a data de alocação de um bloco IPv4;
 u) Mostrar a data de alocação de um bloco IPv6;
-
-FAZENDO
 j) Imprimir o ranking de ASN por pais em ordem decrescente;
 k) Imprimir o ranking da quantidade de IPv4 por pais em ordem decrescente;
 l) Imprimir o ranking da quantidade de IPv6 por pais em ordem decrescente; (fórmula)
+
+FAZENDO
+
 
 A FAZER
 v) Mostrar a quantidade de recursos (ASN/IPv4/IPv6) alocados em um ano e/ou mês específico;

@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include "ferramentas.h"
 
@@ -17,7 +18,7 @@ typedef struct{
 	char ip[25]; //ipv4, ipv6 ou asn
 	char data[10];
   	char status[10];
-  	char ipQuantity[8];
+  	char ipQuantity[10];
 
 	long int posicaoLinha;
 
@@ -34,7 +35,16 @@ typedef struct indexTipoIp{
 	long int posicao;
 }tpIndexTipoIp;
 
+typedef struct rankingPais
+{
+	char pais[3];
+	long int quantidade;
+}tpRankingPais;
 
+typedef struct indexPorData{
+	char data[10];
+	long int posicao;
+}tpIndexPorData;
 
 tpTuplaPrincipal linhaParaStruct(char * linha);
 void printaTuplaPrincipal(tpTuplaPrincipal tuplaPrincipal);
@@ -43,7 +53,7 @@ tpTuplaPrincipal buscaLinha(long int posicao);
 // --- FUNÇÕES PARA CRIAÇÃO DE INDEX ---
 void indexarPaisesOrdenados();
 void indexarPorPais(tpTuplaPrincipal tuplaPrincipal, FILE * indexXpais);
-
+void indexarPorData(tpTuplaPrincipal tuplaPrincipal, FILE *indexPorData);
 void indexarPorTipo(tpTuplaPrincipal tuplaPrincipal, FILE * arquivoIndexIpv4, 
 													 FILE * arquivoIndexIpv6, 
 													 FILE * arquivoIndexAsn);
@@ -52,7 +62,8 @@ void indexarPorTipo(tpTuplaPrincipal tuplaPrincipal, FILE * arquivoIndexIpv4,
 char * buscarPorDataAlocacao(char *tipoIp, char *ip);
 void buscaIndexPorPais();
 int contarQuantidadeTipoIp(char *nomeArquivo); //(ipv4, ipv6, asn)
-int ipPorStatus(char * acao, char * tipoIp, char * nomeArquivoIndexPorIp);
+long int ipPorStatus(char * acao, char * tipoIp, char * nomeArquivoIndexPorIp);
+int quantidadeRecursos(char *tipoIp, char *tipoData, char *data);
 
 // FUNÇÕES AUXILIARES
 char * traduzir(char *argv);
