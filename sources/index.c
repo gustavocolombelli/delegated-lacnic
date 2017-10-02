@@ -537,7 +537,7 @@ void zerarTudo(){
 int main(int argc, char *argv[]){
 
 	if(argv[1]==NULL){
-		erro(1, "É esperado um comando, ./ajuda para mais informações");
+		printf("É esperado um comando, ./ajuda para mais informações\n");
 		return 0;
 	}
 
