@@ -51,7 +51,7 @@ char * caminhoDiretorioArquivo(char *argv){
 	}
 
 void printaData(char *data8dig){
-	printf("Data da alocação: %c%c/%c%c/%c%c%c%c", data8dig[6],data8dig[7],
+	printf("%c%c/%c%c/%c%c%c%c", data8dig[6],data8dig[7],
 								 data8dig[4], data8dig[5],
 								 data8dig[0],data8dig[1], data8dig[2], data8dig[3]);
 
@@ -66,5 +66,45 @@ long int quantidadeIpv6(char *ipv6){
 	return (pow(2, (64-quantidade)));
 }
 
+int compararAno(char *data, char *dataInformada){
+	char ano[5];
+	ano[0]=dataInformada[0];
+	ano[1]=dataInformada[1];
+	ano[2]=dataInformada[2];
+	ano[3]=dataInformada[3];
+	ano[4]= '\n';
+
+	if(strstr(ano, data)!=NULL){
+		return 1;
+		}
+	else return 0;
+}		
+
+int compararMes(char *data, char *dataInformada){
+	char ano[3];
+	ano[0]=dataInformada[4];
+	ano[1]=dataInformada[5];
+	ano[2]='\n';
+
+	if(strstr(ano, data)!=NULL){
+		return 1;
+		}
+	else return 0;
+}
+
+int compararMesAno(char *data, char *dataInformada){
+	char ano[7];
+	ano[0]=dataInformada[4];
+	ano[1]=dataInformada[5];
+	ano[2]=dataInformada[0];
+	ano[3]=dataInformada[1];
+	ano[4]=dataInformada[2];
+	ano[5]=dataInformada[3];
+	ano[6]='\n';
+	if(strstr(ano, data)!=NULL){
+		return 1;
+		}
+	else return 0;
+}
 
 #endif

@@ -199,18 +199,36 @@ int quantidadeRecursos(char *tipoIp, char *tipoData, char *data){
 		while(!feof(arquivoIndexPorData)){
 			fseek(arquivoPrincipal, tuplaPorData.posicao, SEEK_SET);
 			fread(&tuplaPorData, 1, sizeof(tpIndexPorData), arquivoIndexPorData);
-			//printf("%s %ld\n", tuplaPorData.data, tuplaPorData.posicao);
-			if(strstr(tuplaPorData.data, data)!=NULL){
 				fscanf(arquivoPrincipal, "%s", linha);
 				tuplaPrincipal=linhaParaStruct(linha);
-				if(strcmp(tuplaPrincipal.status, "allocated")==0 && strcmp(tuplaPrincipal.tipoIp, tipoIp)==0){
+			if(strcmp(tuplaPrincipal.status, "allocated")==0){
+				//ano
+				if(compararAno(data, tuplaPrincipal.data) && strcmp(tipoIp, tuplaPrincipal.tipoIp)==0 && strcmp(tipoData, "ano")==0){
 					printaData(tuplaPrincipal.data);
-					printf("\t\t[%s]\t\t[%s]\n",tuplaPrincipal.tipoIp, tuplaPrincipal.status);
+					printf("    [%s]\t[%s]\t[%s]\n",tuplaPrincipal.tipoIp, tuplaPrincipal.status, tuplaPrincipal.ip);
+					quantidade++;
 				}
+
+				//mes
+				else if(compararMes(data, tuplaPrincipal.data) && strcmp(tipoIp, tuplaPrincipal.tipoIp)==0 && strcmp(tipoData, "mes")==0){
+					printaData(tuplaPrincipal.data);
+					printf("    [%s]\t[%s]\t[%s]\n",tuplaPrincipal.tipoIp, tuplaPrincipal.status, tuplaPrincipal.ip);
+					quantidade++;
+				}
+
+				//ano e mes
+				else if(compararMesAno(data, tuplaPrincipal.data) && strcmp(tipoIp, tuplaPrincipal.tipoIp)==0 && strcmp(tipoData, "anomes")==0){
+					printaData(tuplaPrincipal.data);
+					printf("    [%s]\t[%s]\t[%s]\n",tuplaPrincipal.tipoIp, tuplaPrincipal.status, tuplaPrincipal.ip);
+					quantidade++;
+				}
+				
 			}
+
+			
 		}
 	}
-	return 50;
+	return quantidade;
 }
 
 //função destinada para a criação dos indices, abertura unica do arquivo principal para a criação dos demais.
@@ -491,6 +509,16 @@ void rankingPorIp(char *tipoIp){
 	}
 }
 
+void zerarTudo(){
+	remove("../data/indexadores/indexIpv4.bin");
+	remove("../data/indexadores/indexIpv6.bin");
+	remove("../data/indexadores/indexAsn.bin");
+	remove("../data/indexadores/indexPorData.bin");
+	remove("../data/indexadores/paisesOrdenados.bin");
+	remove("../data/indexadores/indexPorPais.bin");
+	remove("../data/delegated-lacnic-extended-20170903");
+}
+
 int main(int argc, char *argv[]){
 
 	if(argv[1]==NULL){
@@ -498,7 +526,7 @@ int main(int argc, char *argv[]){
 		return 0;
 	}
 
-	else if(strcmp(argv[1], "-indexar") == 0){
+	else if(strcmp(argv[1], "indexar") == 0){
 		printf("\n---\n[INDEXANDO...]");
 		indexador();
 		indexarPaisesOrdenados();
@@ -512,15 +540,27 @@ int main(int argc, char *argv[]){
 	else if(strcmp(argv[1], "pordata")==0){
 		printf("%s", buscarPorDataAlocacao(argv[2], argv[3]));
 	}
-	else if(strcmp(argv[1], "-ordenarPaises")==0){
+	else if(strcmp(argv[1], "ordenarPaises")==0){
 		indexarPaisesOrdenados();
 	}
 
-	else if(strcmp(argv[1], "-ranking")==0){
+	else if(strcmp(argv[1], "ranking")==0){
 		rankingPorIp(argv[2]);
 	}
-	else if(strcmp(argv[1], "-recursos")==0){
-		quantidadeRecursos(argv[2], argv[3], argv[4]);
+	else if(strcmp(argv[1], "recursos")==0){
+		printf("[TOTAL DE: %d %s ALOCADOS EM %s]\n]", quantidadeRecursos(argv[2], argv[3], argv[4]),argv[2],argv[4]);
+	}
+	else if(strcmp(argv[1], "-*zerar")==0){
+		char c;
+		printf("[AVISO] Tem certeza que deseja apagar toda a base de dado e os índices? [s/n]: ");
+		scanf("%c", &c);
+		if(c=='s'){
+		printf("Apagando base de dados e arquivos de índices...\n");
+
+		zerarTudo();
+		printf("Base de dados e índices apagados com sucesso!\n");
+		}
+		else printf("Abortado!\n.");
 	}
 
 	else{
@@ -555,13 +595,13 @@ u) Mostrar a data de alocação de um bloco IPv6;
 j) Imprimir o ranking de ASN por pais em ordem decrescente;
 k) Imprimir o ranking da quantidade de IPv4 por pais em ordem decrescente;
 l) Imprimir o ranking da quantidade de IPv6 por pais em ordem decrescente; (fórmula)
+v) Mostrar a quantidade de recursos (ASN/IPv4/IPv6) alocados em um ano e/ou mês específico;
 
 FAZENDO
+z) Zerar a base de dados (e arquivos de índices);
 
 
 A FAZER
-v) Mostrar a quantidade de recursos (ASN/IPv4/IPv6) alocados em um ano e/ou mês específico;
-z) Zerar a base de dados (e arquivos de índices);
 
 
 

@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
+#include <unistd.h>
 
 #include "ferramentas.h"
 
@@ -66,6 +67,7 @@ long int ipPorStatus(char * acao, char * tipoIp, char * nomeArquivoIndexPorIp);
 int quantidadeRecursos(char *tipoIp, char *tipoData, char *data);
 
 // FUNÇÕES AUXILIARES
+void zerarTudo();
 char * traduzir(char *argv);
 void contar(char *argv[]);
 //reune todos os index para fazer os indexadores
