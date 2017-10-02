@@ -21,7 +21,18 @@ char * traduzir(char *argv){
 
 
 void erro(int numErro, char *msgErro){
-	printf("[ERRO %d] %s\n", numErro, msgErro);
+	switch(numErro){
+		case 1: printf("[ERRO %d] Comando %s não identificado.\n", numErro, msgErro);
+				break;
+		case 2: printf("[ERRO %d] Argumento %s não identificado.\n", numErro, msgErro);
+				break;
+		case 3: printf("[ERRO %d] O arquivo %s não pode ser aberto para a leitura.\n", numErro, msgErro);
+				break;
+		case 4: printf("[ERRO %d] O arquivo %s não pode ser aberto para a escrita.\n", numErro, msgErro);
+				break;
+		case 5: printf("[ERRO %d] O arquivo %s não pode ser criado.\n", numErro, msgErro);
+				break;
+	}
 }
 
 char * caminhoDiretorioArquivo(char *argv){

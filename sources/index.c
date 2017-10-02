@@ -246,14 +246,29 @@ FILE *arquivoPrincipal,
 char linha[MAX_STR];
 long int posicaoLinha;
 
-	arquivoIndexPais=fopen("../data/indexadores/indexPorPais.bin", "wb");
-	arquivoIndexIpv4=fopen("../data/indexadores/indexIpv4.bin", "wb");
-	arquivoIndexIpv6=fopen("../data/indexadores/indexIpv6.bin", "wb");
-	arquivoIndexAsn=fopen("../data/indexadores/indexAsn.bin", "wb");
-	arquivoIndexPorData=fopen("../data/indexadores/indexPorData.bin", "wb");
+	//arquivoIndexPais=fopen("../data/indexadores/indexPorPais.bin", "wb");
+	//arquivoIndexIpv4=fopen("../data/indexadores/indexIpv4.bin", "wb");
+	//arquivoIndexIpv6=fopen("../data/indexadores/indexIpv6.bin", "wb");
+	//arquivoIndexAsn=fopen("../data/indexadores/indexAsn.bin", "wb");
+	if((arquivoIndexPais=fopen("../data/indexadores/indexPorPais.bin", "wb"))==NULL){
+		erro(4, "indexPorPais.bin");
+	}
+	else if((arquivoIndexIpv4=fopen("../data/indexadores/indexIpv4.bin", "wb"))==NULL){
+		erro(4, "indexIpv4.bin");
+	}
+	else if((arquivoIndexIpv6=fopen("../data/indexadores/indexIpv6.bin", "wb"))==NULL){
+		erro(4, "indexIpv6.bin");
+	}
+	else if((arquivoIndexAsn=fopen("../data/indexadores/indexAsn.bin", "wb"))==NULL){
+		erro(4, "indexAsn.bin");
+	}
 
-	if((arquivoPrincipal=fopen("../data/delegated-lacnic-extended-20170903", "r"))==NULL){
-		printf("Erro ao abrir o arquivo");
+	else if((arquivoIndexPorData=fopen("../data/indexadores/indexPorData.bin", "wb"))==NULL){
+		erro(4, "indexPorData.bin");
+	}
+
+	else if((arquivoPrincipal=fopen("../data/delegated-lacnic-extended-20170903", "r"))==NULL){
+		erro(3, "principal");
 
 	}
 	else{
@@ -367,10 +382,10 @@ char * buscarPorDataAlocacao(char *tipoIp, char *ip){
 		tpTuplaPrincipal tuplaPrincipal;
 		char linha[MAX_STR];
 		if((arquivoIndexIp=fopen(caminhoDiretorioArquivo(tipoIp), "rb"))==NULL){
-			erro(407, "Abertura de arquivo");
+			erro(3, caminhoDiretorioArquivo(tipoIp));
 		}
 		else if((arquivoPrincipal=fopen(caminhoDiretorioArquivo("principal"), "r"))==NULL){
-			erro(407, "Arquivo principal");
+			erro(3, caminhoDiretorioArquivo(tipoIp));
 		}
 		
 		else{
@@ -388,6 +403,7 @@ char * buscarPorDataAlocacao(char *tipoIp, char *ip){
 			tuplaPrincipal = linhaParaStruct(linha);
 
 			if(strcmp(tuplaPrincipal.ip,ip)==0 && strcmp(tuplaPrincipal.status,"allocated")==0){
+				printf("\n--- --- --- --- --- --- ---\nData da alocação: ");
 				printaData(tuplaPrincipal.data);
 				return "\n";
 			}
@@ -440,7 +456,6 @@ void indexarPaisesOrdenados(){
 
 		fclose(indexPorPais);
 		fclose(indexOrdenar);
-
 	}	
 }
 
@@ -527,7 +542,7 @@ int main(int argc, char *argv[]){
 	}
 
 	else if(strcmp(argv[1], "indexar") == 0){
-		printf("\n---\n[INDEXANDO...]");
+		printf("\n---\n[INDEXANDO...]\n");
 		indexador();
 		indexarPaisesOrdenados();
 		printf("\nTodos os indices foram criados com sucesso!\n---\n");
@@ -555,57 +570,16 @@ int main(int argc, char *argv[]){
 		printf("[AVISO] Tem certeza que deseja apagar toda a base de dado e os índices? [s/n]: ");
 		scanf("%c", &c);
 		if(c=='s'){
-		printf("Apagando base de dados e arquivos de índices...\n");
-
-		zerarTudo();
-		printf("Base de dados e índices apagados com sucesso!\n");
+			printf("Apagando base de dados e arquivos de índices...\n");
+			zerarTudo();
+			printf("Base de dados e índices apagados com sucesso!\n");
 		}
 		else printf("Abortado!\n.");
 	}
 
 	else{
-		printf("[ERRO] Comando Inválido, ./ajuda para mais informações\n");
+		erro(1, argv[1]);
 	}
-
-
 
 	return 0;
 }
-
-
-
-/*
-FEITOS
-a) Importar o arquivo-texto, e gerar arquivo(s) estruturado(s) indexado(s)
-g) Contar a quantidade de IPv4 de um país;
-h) Contar a quantidade de IPv6 de um país; (fórmula)
-i) Contar a quantidade de ASN de um país;
-m) Imprimir a quantidade de endereços IPv4 alocados;
-n) Imprimir a quantidade de endereços IPv4 disponíveis;
-o) Imprimir a quantidade de endereços IPv4 reservados;
-p) Imprimir a quantidade de endereços IPv6 alocados; (fórmula)
-q) Imprimir a quantidade de endereços IPv6 disponíveis; (fórmula)
-r) Imprimir a quantidade de endereços IPv6 reservados; (fórmula)
-y) Imprimir os ASN disponíveis;
-w) Imprimir os blocos IPv4 disponíveis;
-x) Imprimir os blocos IPv6 disponíveis;
-s) Mostrar a data de alocação de um ASN;
-t) Mostrar a data de alocação de um bloco IPv4;
-u) Mostrar a data de alocação de um bloco IPv6;
-j) Imprimir o ranking de ASN por pais em ordem decrescente;
-k) Imprimir o ranking da quantidade de IPv4 por pais em ordem decrescente;
-l) Imprimir o ranking da quantidade de IPv6 por pais em ordem decrescente; (fórmula)
-v) Mostrar a quantidade de recursos (ASN/IPv4/IPv6) alocados em um ano e/ou mês específico;
-
-FAZENDO
-z) Zerar a base de dados (e arquivos de índices);
-
-
-A FAZER
-
-
-
-
-
-
-*/
